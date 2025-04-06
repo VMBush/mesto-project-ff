@@ -1,30 +1,72 @@
-import '../pages/index.css'
-import initialCards from './cards'
-// @todo: Темплейт карточки
+import "../pages/index.css";
+import initialCards from "./cards";
+import { createCard, likeCard, deleteCard } from "./card";
+import {
+  openModal,
+  openImageModal,
+  openProfileEditModal,
+  closeModalHandler,
+  closeModal,
+} from "./modal";
+
 const cardTemplate = document.querySelector("#card-template").content;
-
-// @todo: DOM узлы
 const placesList = document.querySelector(".places__list");
+const profileInfo = document.querySelector(".profile__info");
 
-// @todo: Функция создания карточки
-function createCard(cardData, deleteFunction) {
-  const card = cardTemplate.querySelector(".places__item").cloneNode(true);
+const profileEditButton = document.querySelector(".profile__edit-button");
+const profileAddButton = document.querySelector(".profile__add-button");
 
-  card.querySelector(".card__title").textContent = cardData.name;
+const editProfilePopup = document.querySelector(".popup_type_edit");
+const newCardPopup = document.querySelector(".popup_type_new-card");
+const cardImagePopup = document.querySelector(".popup_type_image");
 
-  const cardImage = card.querySelector(".card__image");
-  cardImage.src = cardData.link;
+const newCardForm = document.forms["new-place"];
 
-  const deleteButton = card.querySelector(".card__delete-button");
-  deleteButton.addEventListener("click", () => deleteCard(card));
+initialCards.forEach((el) =>
+  placesList.append(
+    createCard(
+      cardTemplate,
+      el,
+      likeCard,
+      openImageModal,
+      cardImagePopup,
+      deleteCard
+    )
+  )
+);
 
-  return card;
-}
+profileEditButton.addEventListener("click", () =>
+  openProfileEditModal(profileInfo, editProfilePopup)
+);
 
-// @todo: Функция удаления карточки
-function deleteCard(cardElement) {
-  cardElement.remove();
-}
+profileAddButton.addEventListener("click", () => openModal(newCardPopup));
 
-// @todo: Вывести карточки на страницу
-initialCards.forEach((el) => placesList.append(createCard(el, deleteCard)));
+editProfilePopup.addEventListener("click", (evt) =>
+  closeModalHandler(evt, editProfilePopup)
+);
+newCardPopup.addEventListener("click", (evt) =>
+  closeModalHandler(evt, newCardPopup)
+);
+cardImagePopup.addEventListener("click", (evt) =>
+  closeModalHandler(evt, cardImagePopup)
+);
+
+newCardForm.addEventListener("submit", (evt) => {
+  evt.preventDefault();
+  const cardDataElement = {
+    name: newCardForm.elements["place-name"].value,
+    link: newCardForm.elements.link.value,
+  };
+  placesList.prepend(
+    createCard(
+      cardTemplate,
+      cardDataElement,
+      likeCard,
+      openImageModal,
+      cardImagePopup,
+      deleteCard
+    )
+  );
+  closeModal(newCardPopup);
+  newCardForm.reset();
+});
