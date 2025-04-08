@@ -1,11 +1,7 @@
 import "../pages/index.css";
 import initialCards from "./cards";
 import { createCard, likeCard, deleteCard } from "./card";
-import {
-  openModal,
-  closeModalHandler,
-  closeModal,
-} from "./modal";
+import { openModal, closeModalHandler, closeModal } from "./modal";
 
 const cardTemplate = document.querySelector("#card-template").content;
 const placesList = document.querySelector(".places__list");
