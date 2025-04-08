@@ -3,7 +3,6 @@ export function createCard(
   cardData,
   likeFunction,
   openImageFunction,
-  imageModal,
   deleteFunction
 ) {
   const card = cardTemplate.querySelector(".places__item").cloneNode(true);
@@ -15,9 +14,7 @@ export function createCard(
   const cardImage = card.querySelector(".card__image");
   cardImage.src = cardData.link;
   cardImage.alt = cardData.name;
-  cardImage.addEventListener("click", () =>
-    openImageFunction(card, imageModal)
-  );
+  cardImage.addEventListener("click", openImageFunction);
 
   likeButton.addEventListener("click", () => likeFunction(likeButton));
   deleteButton.addEventListener("click", () => deleteFunction(card));
