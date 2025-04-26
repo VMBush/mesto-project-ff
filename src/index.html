@@ -20,7 +20,14 @@
       </header>
       <main class="content">
         <section class="profile page__section">
-          <div class="profile__image"></div>
+          <div class="profile__image">
+            <div class="profile__image__overlay"></div>
+            <img
+              src="<%=require('./images/profile-image-edit.svg')%>"
+              alt="Изменение профиля"
+              class="profile__image__edit"
+            />
+          </div>
           <div class="profile__info">
             <h1 class="profile__title">Жак-Ив Кусто</h1>
             <button class="profile__edit-button" type="button"></button>
@@ -45,15 +52,46 @@
               name="name"
               class="popup__input popup__input_type_name"
               placeholder="Имя"
+              minlength="2"
+              maxlength="40"
+              pattern="^[а-яА-Яa-zA-Z\-\s]*$"
+              data-error-message="Имя может содержать только латинские и кириллические буквы, знаки дефиса и пробелы."
               required
             />
+            <span class="popup__error popup_name_error">ew</span>
             <input
               type="text"
               name="description"
               class="popup__input popup__input_type_description"
               placeholder="Занятие"
+              minlength="2"
+              maxlength="200"
+              pattern="^[а-яА-Яa-zA-Z\-\s]*$"
+              data-error-message="Занятие может содержать только латинские и кириллические буквы, знаки дефиса и пробелы."
               required
             />
+            <span class="popup__error popup_description_error">ew</span>
+            <button type="submit" class="button popup__button">
+              Сохранить
+            </button>
+          </form>
+        </div>
+      </div>
+      <div class="popup popup_type_profile-image popup_is-animated">
+        <div class="popup__content">
+          <button type="button" class="popup__close"></button>
+          <h3 class="popup__title">Обновить аватар</h3>
+          <form class="popup__form" name="profile-image">
+            <input
+              type="text"
+              name="link"
+              class="popup__input popup__input_type_url"
+              placeholder="Ссылка на фото"
+              pattern="^(https?:\/\/)?(www\.)?[a-zA-Z0-9\.\-]+\.[a-zA-Z]{2,}(\/\S*)?$"
+              data-error-message="Введите адрес изображения."
+              required
+            />
+            <span class="popup__error popup_link_error">ew</span>
             <button type="submit" class="button popup__button">
               Сохранить
             </button>
@@ -70,15 +108,23 @@
               name="place-name"
               class="popup__input popup__input_type_card-name"
               placeholder="Название"
+              minlength="2"
+              maxlength="30"
+              pattern="^[а-яА-Яa-zA-Z\-\s]*$"
+              data-error-message="Название может содержать только латинские и кириллические буквы, знаки дефиса и пробелы."
               required
             />
+            <span class="popup__error popup_place-name_error">ew</span>
             <input
-              type="url"
+              type="text"
               name="link"
               class="popup__input popup__input_type_url"
               placeholder="Ссылка на картинку"
+              pattern="^(https?:\/\/)?(www\.)?[a-zA-Z0-9\.\-]+\.[a-zA-Z]{2,}(\/\S*)?$"
+              data-error-message="Введите адрес сайта."
               required
             />
+            <span class="popup__error popup_link_error">ew</span>
             <button type="submit" class="button popup__button">
               Сохранить
             </button>
@@ -100,7 +146,10 @@
         <button type="button" class="card__delete-button"></button>
         <div class="card__description">
           <h2 class="card__title"></h2>
-          <button type="button" class="card__like-button"></button>
+          <div class="card__like-container">
+            <button type="button" class="card__like-button"></button>
+            <p class="card__like-caption"></p>
+          </div>
         </div>
       </li>
     </template>
