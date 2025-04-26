@@ -1,0 +1,14 @@
+.profile__image__overlay {
+  width: 100%;
+  height: 100%;
+  background: rgb(0, 0, 0);
+  -webkit-border-radius: 50%;
+  -moz-border-radius: 50%;
+  border-radius: 50%;
+  opacity: 0;
+  transition: .3s;
+}
+
+.profile__image:hover .profile__image__overlay {
+  opacity: .6;
+}
