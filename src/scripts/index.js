@@ -1,7 +1,7 @@
 import "../pages/index.css";
 //import initialCards from "./cards";
 import { createCard, likeCard, deleteCard } from "./card";
-import { openModal, closeModalHandler, closeModal } from "./modal";
+import { openModal, closeByOverlay, closeModal } from "./modal";
 import { clearValidation, enableValidation } from "./validation";
 import {
   fetchInitialCards,
@@ -10,7 +10,6 @@ import {
   patchProfileInfo,
   postAddCard,
 } from "./api";
-import initialCards from "./cards";
 
 const cardTemplate = document.querySelector("#card-template").content;
 const placesList = document.querySelector(".places__list");
@@ -25,11 +24,21 @@ const profileEditButton = document.querySelector(".profile__edit-button");
 const profileAddButton = document.querySelector(".profile__add-button");
 
 const editProfileModal = document.querySelector(".popup_type_edit");
+const editProfileModalClose = editProfileModal.querySelector(".popup__close");
+
 const newCardModal = document.querySelector(".popup_type_new-card");
+const newCardModalClose = newCardModal.querySelector(".popup__close");
+
 const cardImageModal = document.querySelector(".popup_type_image");
+const cardImageModalClose = cardImageModal.querySelector(".popup__close");
+
+const cardImageModalImage = cardImageModal.querySelector(".popup__image");
+const cardImageModalCaption = cardImageModal.querySelector(".popup__caption");
 const editProfileImageModal = document.querySelector(
   ".popup_type_profile-image"
 );
+const editProfileImageModalClose =
+  editProfileImageModal.querySelector(".popup__close");
 
 const editProfileForm = editProfileModal.querySelector(".popup__form");
 const editProfileFormName = editProfileForm.name;
@@ -49,18 +58,12 @@ const validationConfig = {
   errorClass: "popup__error__visible",
 };
 
-const profileInfoPromise = fetchProfileInfo();
-profileInfoPromise
-  .then((res) => {
-    profileInfoName.textContent = res.name;
-    profileInfoDescription.textContent = res.about;
-    profileImage.style.backgroundImage = `URL(${res.avatar})`;
-  })
-  .catch(log);
-
-const initialCardsPromise = fetchInitialCards();
-Promise.all([profileInfoPromise, initialCardsPromise])
+Promise.all([fetchProfileInfo(), fetchInitialCards()])
   .then(([profileInfo, initialCards]) => {
+    profileInfoName.textContent = profileInfo.name;
+    profileInfoDescription.textContent = profileInfo.about;
+    profileImage.style.backgroundImage = `URL(${profileInfo.avatar})`;
+
     initialCards.forEach((el) =>
       placesList.append(
         createCard(
@@ -77,14 +80,13 @@ Promise.all([profileInfoPromise, initialCardsPromise])
   .catch(log);
 
 profileEditButton.addEventListener("click", () => {
+  clearValidation(editProfileForm, validationConfig);
   editProfileFormName.value = profileInfoName.textContent;
   editProfileFormDescription.value = profileInfoDescription.textContent;
-  clearValidation(editProfileForm, validationConfig);
   openModal(editProfileModal);
 });
 
 profileImage.addEventListener("click", () => {
-  editProfileImageFormUrl.value = "";
   clearValidation(editProfileImageForm, validationConfig);
   openModal(editProfileImageModal);
 });
@@ -94,31 +96,19 @@ profileAddButton.addEventListener("click", () => {
   openModal(newCardModal);
 });
 
-editProfileModal.addEventListener("click", (evt) =>
-  closeModalHandler(evt, editProfileModal)
-);
-editProfileImageModal.addEventListener("click", (evt) => {
-  closeModalHandler(evt, editProfileImageModal);
-});
-newCardModal.addEventListener("click", (evt) =>
-  closeModalHandler(evt, newCardModal)
-);
-cardImageModal.addEventListener("click", (evt) =>
-  closeModalHandler(evt, cardImageModal)
-);
-
 editProfileForm.addEventListener("submit", (evt) => {
   evt.preventDefault();
 
-  profileInfoName.textContent = editProfileFormName.value;
-  profileInfoDescription.textContent = editProfileFormDescription.value;
-
-  const submitButton = editProfileForm.querySelector("button");
+  const submitButton = evt.submitter;
   submitButton.textContent = "Сохранение...";
   patchProfileInfo(editProfileFormName.value, editProfileFormDescription.value)
+    .then(() => {
+      profileInfoName.textContent = editProfileFormName.value;
+      profileInfoDescription.textContent = editProfileFormDescription.value;
+      closeModal(editProfileModal);
+    })
     .catch(log)
     .finally(() => {
-      closeModal(editProfileModal);
       submitButton.textContent = "Сохранить";
     });
 });
@@ -126,15 +116,15 @@ editProfileForm.addEventListener("submit", (evt) => {
 editProfileImageForm.addEventListener("submit", (evt) => {
   evt.preventDefault();
 
-  const submitButton = editProfileImageForm.querySelector("button");
+  const submitButton = evt.submitter;
   submitButton.textContent = "Сохранение...";
   patchProfileImage(editProfileImageFormUrl.value)
     .then((res) => {
       profileImage.style.backgroundImage = `URL(${res.avatar})`;
+      closeModal(editProfileImageModal);
     })
     .catch(log)
     .finally(() => {
-      closeModal(editProfileImageModal);
       submitButton.textContent = "Сохранить";
     });
 });
@@ -146,7 +136,7 @@ newCardForm.addEventListener("submit", (evt) => {
     link: newCardForm.elements.link.value,
   };
 
-  const submitButton = newCardForm.querySelector("button");
+  const submitButton = evt.submitter;
   submitButton.textContent = "Сохранение...";
   postAddCard(cardDataElement.name, cardDataElement.link)
     .then((cardData) => {
@@ -160,24 +150,35 @@ newCardForm.addEventListener("submit", (evt) => {
           cardData.owner._id
         )
       );
+      closeModal(newCardModal);
     })
     .catch(log)
     .finally(() => {
-      closeModal(newCardModal);
       submitButton.textContent = "Сохранить";
-      newCardForm.reset();
     });
 });
 
-function openImageModal(evt) {
-  const modalImage = cardImageModal.querySelector(".popup__image");
-  modalImage.src = evt.target.src;
-  modalImage.alt = evt.target.alt;
+function openImageModal(src, alt) {
+  const modalImage = cardImageModalImage;
+  modalImage.src = src;
+  modalImage.alt = alt;
 
-  const popupCaption = evt.target.alt;
-  cardImageModal.querySelector(".popup__caption").textContent = popupCaption;
+  cardImageModalCaption.textContent = alt;
 
   openModal(cardImageModal);
+}
+
+function handleModalsClose(modals) {
+  modals.forEach((modal) => {
+    const modalClose = modal.querySelector(".popup__close");
+
+    modal.addEventListener("click", (evt) => {
+      closeByOverlay(evt, modal);
+    });
+    modalClose.addEventListener("click", () =>
+      closeModal(modal)
+    );
+  })
 }
 
 function log(message) {
@@ -185,3 +186,5 @@ function log(message) {
 }
 
 enableValidation(validationConfig);
+
+handleModalsClose([editProfileModal, editProfileImageModal, newCardModal, cardImageModal])

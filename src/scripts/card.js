@@ -23,16 +23,18 @@ export function createCard(
   const cardImage = card.querySelector(".card__image");
   cardImage.src = cardData.link;
   cardImage.alt = cardData.name;
-  cardImage.addEventListener("click", openImageFunction);
-
-  card.dataset._id = cardData._id;
+  cardImage.addEventListener("click", () =>
+    openImageFunction(cardData.link, cardData.name)
+  );
 
   likeButton.addEventListener("click", () =>
     likeFunction(likeButton, likeCaption, cardData._id)
   );
 
   if (cardData.owner._id === profileId) {
-    deleteButton.addEventListener("click", () => deleteFunction(card));
+    deleteButton.addEventListener("click", () =>
+      deleteFunction(card, cardData._id)
+    );
   } else {
     deleteButton.remove();
   }
@@ -44,28 +46,28 @@ export function createCard(
   return card;
 }
 
-export function deleteCard(cardElement) {
-  cardElement.remove();
-  deleteCardHttp(cardElement.dataset._id).catch(log);
+export function deleteCard(cardElement, id) {
+  deleteCardHttp(id).then(cardElement.remove()).catch(log);
 }
 
 export function likeCard(likeButton, likeCaption, id) {
-  toggleLikeButton(likeButton);
-
-  let likeFunction;
-  if (likeButton.classList.contains("card__like-button_is-active")) {
-    likeFunction = putLikeCard;
-  } else {
-    likeFunction = deleteLikeCard;
-  }
+  const isLiked = likeButton.classList.contains("card__like-button_is-active");
+  const likeFunction = isLiked ? deleteLikeCard : putLikeCard;
 
   likeFunction(id)
-    .then((cardInfo) => (likeCaption.textContent = cardInfo.likes.length))
+    .then((cardInfo) => {
+      toggleLikeButton(likeButton, isLiked);
+      likeCaption.textContent = cardInfo.likes.length;
+    })
     .catch(log);
 }
 
-function toggleLikeButton(likeButton) {
-  likeButton.classList.toggle("card__like-button_is-active");
+function toggleLikeButton(likeButton, isLiked) {
+  if (isLiked) {
+    likeButton.classList.remove("card__like-button_is-active");
+  } else {
+    likeButton.classList.add("card__like-button_is-active");
+  }
 }
 
 function log(message) {

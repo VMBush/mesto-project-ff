@@ -20,7 +20,7 @@ export function enableValidation(validationConfig) {
 
     inputElements.forEach((inputElement) => {
       inputElement.addEventListener("input", () => {
-        validateInput(formElement, inputElement);
+        validateInput(formElement, inputElement, validationConfig.errorClass);
         toggleSubmitButton(
           inputElements,
           submitButton,
@@ -31,40 +31,46 @@ export function enableValidation(validationConfig) {
   });
 }
 
-export function clearValidation(profileForm, validationConfig) {
-  profileForm
+export function clearValidation(formElement, validationConfig) {
+  const inputElements = formElement.querySelectorAll(
+    validationConfig.inputSelector
+  );
+
+  inputElements.forEach((el) => (el.value = ""));
+
+  formElement
     .querySelectorAll(validationConfig.inputErrorClass)
     .forEach(hideError);
 
   toggleSubmitButton(
-    profileForm.querySelectorAll(validationConfig.inputSelector),
-    profileForm.querySelector(validationConfig.submitButtonSelector),
+    inputElements,
+    formElement.querySelector(validationConfig.submitButtonSelector),
     validationConfig.inactiveButtonClass
   );
 }
 
-function validateInput(formElement, inputElement) {
+function validateInput(formElement, inputElement, errorClass) {
   const errorElement = formElement.querySelector(
     `.popup_${inputElement.name}_error`
   );
 
   if (inputElement.validity.patternMismatch) {
-    showError(errorElement, inputElement.dataset.errorMessage);
+    showError(errorElement, inputElement.dataset.errorMessage, errorClass);
   } else if (!inputElement.validity.valid) {
-    showError(errorElement, inputElement.validationMessage);
+    showError(errorElement, inputElement.validationMessage, errorClass);
   } else {
-    hideError(errorElement);
+    hideError(errorElement, errorClass);
   }
 }
 
-function showError(errorElement, errorMessage) {
+function showError(errorElement, errorMessage, errorClass) {
   errorElement.textContent = errorMessage;
-  errorElement.classList.add("popup__error__visible");
+  errorElement.classList.add(errorClass);
 }
 
-function hideError(errorElement) {
+function hideError(errorElement, errorClass) {
   errorElement.textContent = "";
-  errorElement.classList.remove("popup__error__visible");
+  errorElement.classList.remove(errorClass);
 }
 
 function toggleSubmitButton(inputElements, submitButton, toggleClass) {
